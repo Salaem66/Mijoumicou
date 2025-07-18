@@ -1,0 +1,42 @@
+{
+  "name": "mijoumicou",
+  "version": "1.0.0",
+  "description": "Assistant IA pour recommandations de jeux de société selon votre humeur",
+  "main": "index.js",
+  "scripts": {
+    "start": "concurrently \"npm run start:backend\" \"npm run start:frontend\"",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm start",
+    "start:dev": "concurrently \"cd backend && ./start-advanced.sh\" \"cd frontend && ./start-frontend.sh\"",
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "test": "cd frontend && npm test",
+    "build": "cd frontend && npm run build",
+    "clean": "rm -rf backend/node_modules frontend/node_modules node_modules"
+  },
+  "keywords": [
+    "jeux de société",
+    "recommandation",
+    "intelligence artificielle",
+    "analyse d'humeur",
+    "NLP",
+    "board games",
+    "recommendation system"
+  ],
+  "author": "Mijoumicou",
+  "license": "MIT",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/maesiven/Mijoumicou.git"
+  },
+  "homepage": "https://github.com/maesiven/Mijoumicou#readme",
+  "bugs": {
+    "url": "https://github.com/maesiven/Mijoumicou/issues"
+  }
+}
