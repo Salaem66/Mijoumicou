@@ -65,7 +65,7 @@ L'IA analyse 8 critères principaux :
 
 - *"Je suis fatigué mais j'ai envie de rigoler avec mes amis"* → Jeux fun et sociaux, énergie modérée
 - *"Grosse soirée jeux entre potes"* → Jeux party et interaction, longue durée
-- *"On a 20 minutes avant de partir"* → Jeux rapides et simples
+- *"Apéro décontracté en couple"* → Jeux courts et romantiques à deux
 
 ## 🛠️ Développement
 

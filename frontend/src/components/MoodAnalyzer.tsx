@@ -25,7 +25,7 @@ const MoodAnalyzer: React.FC<MoodAnalyzerProps> = ({ onAnalyze, loading, analysi
   const exampleMoods = [
     "Je suis fatigué mais j'ai envie de rigoler avec mes amis",
     "Grosse soirée jeux entre potes",
-    "On a 20 minutes avant de partir"
+    "Apéro décontracté en couple"
   ];
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -165,7 +165,7 @@ const MoodAnalyzer: React.FC<MoodAnalyzerProps> = ({ onAnalyze, loading, analysi
           className="mt-6"
         >
           <h3 className="text-sm font-medium text-gray-700 mb-3">💡 Exemples d'humeurs :</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="flex flex-col sm:flex-row gap-3">
             {exampleMoods.map((example, index) => (
               <motion.div
                 key={index}
@@ -175,7 +175,7 @@ const MoodAnalyzer: React.FC<MoodAnalyzerProps> = ({ onAnalyze, loading, analysi
                 <Button
                   variant="outline"
                   onClick={() => handleExampleClick(example)}
-                  className="p-3 h-auto text-left bg-gray-50 hover:bg-gray-100 text-sm text-gray-700 transition-all duration-200 hover:border-purple-300 whitespace-normal"
+                  className="flex-1 p-3 h-auto text-left bg-gray-50 hover:bg-gray-100 text-sm text-gray-700 transition-all duration-200 hover:border-purple-300 whitespace-normal"
                   disabled={loading}
                 >
                   "{example}"
