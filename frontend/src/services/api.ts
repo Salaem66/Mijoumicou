@@ -1,4 +1,4 @@
-import { RecommendationResponse, MoodAnalysis, Game, ApiError } from '../types';
+import { RecommendationResponse, MoodAnalysis, Game } from '../types';
 
 const API_BASE_URL = 'http://localhost:3001/api';
 

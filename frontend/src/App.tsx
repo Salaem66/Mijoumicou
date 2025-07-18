@@ -27,7 +27,7 @@ function App() {
   const [showAllGames, setShowAllGames] = useState(false);
   const [showAddGame, setShowAddGame] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
-  const { filterGamesInLibrary, getGameCount, getGameIds } = useLibrary();
+  const { getGameCount, getGameIds } = useLibrary();
 
   useEffect(() => {
     // Charger les statistiques et tous les jeux au démarrage
