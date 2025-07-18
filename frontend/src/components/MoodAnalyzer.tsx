@@ -24,11 +24,8 @@ const MoodAnalyzer: React.FC<MoodAnalyzerProps> = ({ onAnalyze, loading, analysi
 
   const exampleMoods = [
     "Je suis fatigué mais j'ai envie de rigoler avec mes amis",
-    "Dimanche pluvieux, envie de quelque chose de stratégique",
-    "Grosse soirée jeux, on veut s'éclater",
-    "Apéro décontracté en couple",
-    "On a 20 minutes avant de partir",
-    "Famille réunie, tout le monde ensemble"
+    "Grosse soirée jeux entre potes",
+    "On a 20 minutes avant de partir"
   ];
 
   const handleSubmit = (e: React.FormEvent) => {

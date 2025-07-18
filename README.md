@@ -63,9 +63,8 @@ L'IA analyse 8 critères principaux :
 
 ## 🎯 Exemples de recherche
 
-- *"Grosse soirée jeux entre potes"* → Jeux party et interaction
-- *"Dimanche pluvieux, envie de stratégie"* → Jeux contemplatifs et tactiques
-- *"Apéro décontracté en couple"* → Jeux courts et relaxants
+- *"Je suis fatigué mais j'ai envie de rigoler avec mes amis"* → Jeux fun et sociaux, énergie modérée
+- *"Grosse soirée jeux entre potes"* → Jeux party et interaction, longue durée
 - *"On a 20 minutes avant de partir"* → Jeux rapides et simples
 
 ## 🛠️ Développement
