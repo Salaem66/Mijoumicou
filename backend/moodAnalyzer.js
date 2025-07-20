@@ -58,7 +58,13 @@ class AdvancedMoodAnalyzer {
       'nous_voulons': { niveau_social: 4.0, mots_clés: ['nous voulons', 'on veut', 'on aimerait', 'nous aimerions'] },
       'avec_amis': { niveau_social: 4.5, joueurs_ideal: 4, mots_clés: ['avec des amis', 'avec mes amis', 'entre amis', 'amis présents'] },
       'convivial': { niveau_social: 4.0, energie_requise: 3.0, mots_clés: ['convivial', 'sympa', 'agréable', 'bonne ambiance'] },
-      'sans_stress': { tension_niveau: 1.5, facteur_chance: 3.5, mots_clés: ['sans stress', 'sans pression', 'décontracté', 'peinard'] }
+      'sans_stress': { tension_niveau: 1.5, facteur_chance: 3.5, mots_clés: ['sans stress', 'sans pression', 'décontracté', 'peinard'] },
+      
+      // Mots-clés spéciaux pour Perudo (démo Célia)
+      'nul': { energie_requise: 3.5, niveau_social: 4.5, facteur_chance: 4.0, tags: ['nul', 'fun', 'bluff'], mots_clés: ['nul', 'pourri', 'débile', 'stupide'] },
+      'con': { energie_requise: 3.5, niveau_social: 4.5, facteur_chance: 4.0, tags: ['con', 'fun', 'chaos'], mots_clés: ['con', 'connard', 'abruti', 'crétin', 'CON'] },
+      'merde': { energie_requise: 3.5, niveau_social: 4.5, facteur_chance: 4.0, tags: ['merde', 'fun', 'chaos'], mots_clés: ['merde', 'merdique', 'MERDE', 'de merde'] },
+      'bluff': { energie_requise: 3.5, niveau_social: 4.5, facteur_chance: 4.0, tags: ['bluff', 'menteur'], mots_clés: ['bluff', 'mentir', 'tricher', 'duper'] }
     };
 
     this.expressionsComplexes = [
