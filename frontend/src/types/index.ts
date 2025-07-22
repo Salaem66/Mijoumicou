@@ -77,3 +77,41 @@ export interface RecommendationResponse {
 export interface ApiError {
   error: string;
 }
+
+// Types d'authentification et de base de données Supabase
+export interface UserProfile {
+  id: string;
+  username?: string;
+  full_name?: string;
+  avatar_url?: string;
+  complexity_preference?: number;
+  duration_preference?: number;
+  player_count_preference?: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface UserLibraryEntry {
+  id: string;
+  user_id: string;
+  game_id: number;
+  added_at: string;
+  notes?: string;
+  rating?: number;
+  // Champs du jeu (depuis la vue)
+  nom?: string;
+  description_courte?: string;
+  complexite?: number;
+  duree_moyenne?: number;
+  joueurs_min?: number;
+  joueurs_max?: number;
+}
+
+export interface SearchHistoryEntry {
+  id: string;
+  user_id: string;
+  mood_query: string;
+  mood_analysis: MoodAnalysis;
+  recommendations: Game[];
+  search_date: string;
+}
