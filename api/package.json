@@ -1,0 +1,9 @@
+{
+  "name": "mijoumicou-api",
+  "version": "1.0.0",
+  "main": "index.js",
+  "dependencies": {
+    "sqlite3": "^5.1.6",
+    "natural": "^6.5.0"
+  }
+}

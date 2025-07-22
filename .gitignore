@@ -101,3 +101,7 @@ temp/
 # Backend specific
 backend/uploads/
 backend/logs/
+.vercel
+
+# Local Netlify folder
+.netlify

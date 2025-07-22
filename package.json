@@ -10,8 +10,9 @@
     "start:dev": "concurrently \"cd backend && ./start-advanced.sh\" \"cd frontend && ./start-frontend.sh\"",
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "test": "cd frontend && npm test",
-    "build": "cd frontend && npm run build",
-    "clean": "rm -rf backend/node_modules frontend/node_modules node_modules"
+    "build": "cd frontend && npm install && npm run build && cp -r frontend/build/* .",
+    "clean": "rm -rf backend/node_modules frontend/node_modules node_modules",
+    "vercel-build": "npm run install:all && npm run build"
   },
   "keywords": [
     "jeux de société",
