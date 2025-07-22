@@ -205,6 +205,12 @@ function App() {
     setShowStartPage(false);
   };
 
+  const handleCeliaDemo = async (mood: string) => {
+    console.log('🎪 Démo Célia déclenchée avec:', mood);
+    // Déclencher l'analyse normale avec le texte de Célia
+    await handleMoodAnalysis(mood, false);
+  };
+
   const handleGameAdded = (newGame: Game) => {
     // Rafraîchir la liste des jeux
     setAllGames(prev => [...prev, newGame]);
@@ -223,7 +229,7 @@ function App() {
           exit={{ opacity: 0 }}
           transition={{ duration: 0.3 }}
         >
-          <StartPage onStart={handleStartApp} />
+          <StartPage onStart={handleStartApp} onCeliaDemo={handleCeliaDemo} />
         </motion.div>
       ) : (
         <motion.div

@@ -5,9 +5,10 @@ import { Button } from './ui/button';
 
 interface StartPageProps {
   onStart: () => void;
+  onCeliaDemo?: (mood: string) => void;
 }
 
-const StartPage: React.FC<StartPageProps> = ({ onStart }) => {
+const StartPage: React.FC<StartPageProps> = ({ onStart, onCeliaDemo }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -102,92 +103,14 @@ const StartPage: React.FC<StartPageProps> = ({ onStart }) => {
                   // Définir la fonction de démo
                   (window as any).startCeliaDemo = () => {
                     onStart();
-                    setTimeout(() => {
-                      // Auto-remplir avec un exemple spécial pour Célia
-                      const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
-                      if (textarea) {
-                        const celiaExample = "Je cherche un jeu de MERDE qui ne plaît uniquement qu'à un gros CON";
-                        let i = 0;
-                        
-                        // Reset initial
-                        textarea.value = "";
-                        textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                        
-                        const typeWriter = () => {
-                          if (i < celiaExample.length) {
-                            const currentText = celiaExample.substring(0, i + 1);
-                            
-                            // Mise à jour agressive du textarea pour React
-                            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
-                            if (nativeInputValueSetter) {
-                              nativeInputValueSetter.call(textarea, currentText);
-                            }
-                            textarea.value = currentText;
-                            
-                            // Forcer React à détecter le changement avec tous les événements possibles
-                            ['input', 'change', 'keyup', 'paste'].forEach(eventType => {
-                              const event = new Event(eventType, { bubbles: true });
-                              Object.defineProperty(event, 'target', { writable: false, value: textarea });
-                              textarea.dispatchEvent(event);
-                            });
-                            
-                            // Forcer la synchronisation avec React
-                            const reactInternalInstance = (textarea as any)._valueTracker;
-                            if (reactInternalInstance) {
-                              reactInternalInstance.setValue('');
-                            }
-                            
-                            textarea.focus();
-                            
-                            i++;
-                            setTimeout(typeWriter, 100);
-                          } else {
-                            // Attendre puis déclencher la soumission avec le texte final
-                            setTimeout(() => {
-                              console.log('🎯 Finalisation de la démo Célia...');
-                              
-                              // S'assurer que le texte est bien présent
-                              const finalText = celiaExample;
-                              textarea.value = finalText;
-                              
-                              // Dernière tentative de synchronisation React
-                              const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
-                              if (nativeInputValueSetter) {
-                                nativeInputValueSetter.call(textarea, finalText);
-                              }
-                              
-                              ['input', 'change'].forEach(eventType => {
-                                const event = new Event(eventType, { bubbles: true });
-                                Object.defineProperty(event, 'target', { writable: false, value: textarea });
-                                textarea.dispatchEvent(event);
-                              });
-                              
-                              // Déclencher l'analyse
-                              setTimeout(() => {
-                                const submitButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
-                                if (submitButton && !submitButton.disabled) {
-                                  console.log('🔥 Déclenchement automatique de l\'analyse...');
-                                  submitButton.click();
-                                } else {
-                                  console.log('❌ Bouton non disponible, nouvelle tentative...');
-                                  // Nouvelle tentative
-                                  setTimeout(() => {
-                                    const retryButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
-                                    if (retryButton) {
-                                      retryButton.disabled = false;
-                                      retryButton.click();
-                                    }
-                                  }, 500);
-                                }
-                              }, 300);
-                            }, 1000);
-                          }
-                        };
-                        
-                        // Commencer la frappe après un petit délai
-                        setTimeout(typeWriter, 500);
-                      }
-                    }, 1000);
+                    
+                    // Utiliser la fonction callback si disponible
+                    if (onCeliaDemo) {
+                      console.log('🎪 Démo Célia via callback...');
+                      setTimeout(() => {
+                        onCeliaDemo("Je cherche un jeu de MERDE qui ne plaît uniquement qu'à un gros CON");
+                      }, 1500);
+                    }
                   };
                 }}
                 variant="outline"
