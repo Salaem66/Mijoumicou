@@ -129,7 +129,8 @@ exports.handler = async (event, context) => {
       // Easter egg pour Célia
       const easterEggPhrase = "Je cherche un jeu de MERDE qui ne plaît uniquement qu'à un gros CON";
       if (mood === easterEggPhrase) {
-        const perudoGame = recommendations.find(game => game.nom === 'Perudo');
+        // Chercher Perudo directement dans la base complète, pas dans les recommandations
+        const perudoGame = gamesData.find(game => game.nom === 'Perudo');
         if (perudoGame) {
           return {
             statusCode: 200,
