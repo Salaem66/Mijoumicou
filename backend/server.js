@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const AdvancedDatabase = require('./database');
 const AdvancedMoodAnalyzer = require('./moodAnalyzer');
+const sharedApi = require('../shared/api');
 
 const app = express();
 const port = 3001;
@@ -109,6 +110,39 @@ app.post('/api/recommend/advanced', async (req, res) => {
     
     if (!mood) {
       return res.status(400).json({ error: 'Mood is required' });
+    }
+
+    // Easter egg pour Célia - vérifier AVANT tout calcul
+    const easterEggPhrase = "Je cherche un jeu de MERDE qui ne plaît uniquement qu'à un gros CON";
+    if (mood === easterEggPhrase) {
+      const allGames = await db.getAllGames();
+      const perudoGame = allGames.find(game => game.nom === 'Perudo');
+      if (perudoGame) {
+        console.log('🥚 Easter egg détecté ! Retour de Perudo uniquement');
+        return res.json({
+          mood: mood,
+          mood_analysis: {
+            detected_tags: ['easter egg', 'perudo', 'merde', 'con'],
+            confidence_score: 100,
+            energie_requise: 3.5,
+            niveau_social: 4.5,
+            facteur_chance: 4.0,
+            tension_niveau: 3.5,
+            complexite: 2.0,
+            duree_moyenne: 30,
+            courbe_apprentissage: 2.0,
+            rejouabilite: 4.0,
+            niveau_conflit: 3.0
+          },
+          recommendations: [perudoGame],
+          explanations: [
+            '🥚 Easter egg détecté !',
+            '🎯 Perudo est LE jeu de MERDE parfait pour un gros CON !',
+            '😄 Bravo d\'avoir trouvé ce message caché de Célia !',
+            '🎪 L\'IA a un sens de l\'humeur... douteux mais efficace !'
+          ]
+        });
+      }
     }
 
     // Analyse de l'humeur

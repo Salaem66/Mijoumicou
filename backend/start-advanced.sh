@@ -39,4 +39,5 @@ echo ""
 echo "🎯 Appuyez sur Ctrl+C pour arrêter le serveur"
 echo ""
 
-node server.js
+echo "🔗 Mode API partagée activé - synchronisé avec Netlify"
+node server-shared.js
