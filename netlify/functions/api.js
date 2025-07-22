@@ -122,25 +122,29 @@ exports.handler = async (event, context) => {
         };
       }
 
-      const analysis = analyzeMood(mood);
-      const gamesWithScores = calculateCompatibilityScores(gamesData, analysis);
-      const recommendations = selectDiverseRecommendations(gamesWithScores, 6);
-      
-      // Easter egg pour Célia
+      // Easter egg pour Célia - vérifier AVANT tout calcul
       const easterEggPhrase = "Je cherche un jeu de MERDE qui ne plaît uniquement qu'à un gros CON";
       if (mood === easterEggPhrase) {
-        // Chercher Perudo directement dans la base complète, pas dans les recommandations
         const perudoGame = gamesData.find(game => game.nom === 'Perudo');
         if (perudoGame) {
+          console.log('🥚 Easter egg détecté ! Retour de Perudo uniquement');
           return {
             statusCode: 200,
             headers,
             body: JSON.stringify({
               mood: mood,
               analysis: {
-                ...analysis,
                 detected_tags: ['easter egg', 'perudo', 'merde', 'con'],
-                confidence_score: 100
+                confidence_score: 100,
+                energie_requise: 3.5,
+                niveau_social: 4.5,
+                facteur_chance: 4.0,
+                tension_niveau: 3.5,
+                complexite: 2.0,
+                duree_moyenne: 30,
+                courbe_apprentissage: 2.0,
+                rejouabilite: 4.0,
+                niveau_conflit: 3.0
               },
               recommendations: [perudoGame],
               explanations: [
@@ -153,6 +157,10 @@ exports.handler = async (event, context) => {
           };
         }
       }
+
+      const analysis = analyzeMood(mood);
+      const gamesWithScores = calculateCompatibilityScores(gamesData, analysis);
+      const recommendations = selectDiverseRecommendations(gamesWithScores, 6);
 
       const explanations = [
         `🎯 Analyse: ${analysis.detected_tags.slice(0, 3).join(', ')}`,
