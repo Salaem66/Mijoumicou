@@ -136,12 +136,18 @@ const StartPage: React.FC<StartPageProps> = ({ onStart, onCeliaDemo }) => {
                             i++;
                             setTimeout(typeWriter, 120);
                           } else {
-                            // Une fois l'animation terminée, utiliser le callback pour garantir le résultat
+                            // Une fois l'animation terminée, attendre un peu puis utiliser le callback
                             setTimeout(() => {
                               console.log('🎪 Animation terminée, déclenchement via callback...');
+                              // Marquer que c'est une démo pour éviter la préservation du texte
+                              (window as any).isDemoActive = true;
                               if (onCeliaDemo) {
                                 onCeliaDemo(celiaExample);
                               }
+                              // Désactiver le marqueur après l'analyse pour permettre l'effacement au clic
+                              setTimeout(() => {
+                                delete (window as any).isDemoActive;
+                              }, 3000);
                             }, 1000);
                           }
                         };

@@ -46,86 +46,7 @@ function App() {
 
     loadInitialData();
 
-    // Listener pour la démo Célia
-    const handleCeliaAnalysis = (event: CustomEvent) => {
-      console.log('🎪 Événement démo Célia reçu:', event.detail);
-      const { mood, results, keepText } = event.detail;
-      
-      // Mettre à jour l'état avec les résultats
-      setRecommendations(results);
-      setShowStartPage(false);
-      setLoading(false);
-      setError(null);
-      
-      // Si keepText est true, utiliser une approche plus agressive
-      if (keepText) {
-        console.log('🔒 Mode préservation du texte activé pour:', mood);
-        
-        // Stocker le texte globalement pour la persistance
-        (window as any).celiaPreservedText = mood;
-        
-        // Fonction de restauration robuste
-        const forceRestoreText = () => {
-          const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
-          if (textarea && (window as any).celiaPreservedText) {
-            const targetText = (window as any).celiaPreservedText;
-            
-            // Méthode 1: Valeur DOM directe
-            textarea.value = targetText;
-            
-            // Méthode 2: Setter natif
-            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
-            if (nativeInputValueSetter) {
-              nativeInputValueSetter.call(textarea, targetText);
-            }
-            
-            // Méthode 3: Simuler la frappe pour React
-            textarea.focus();
-            textarea.select();
-            document.execCommand('insertText', false, targetText);
-            
-            console.log('💾 Texte forcé dans l\'input:', targetText);
-          }
-        };
-        
-        // Restaurations multiples avec timing agressif
-        const delays = [50, 100, 200, 500, 1000, 1500, 2000, 3000];
-        delays.forEach(delay => {
-          setTimeout(forceRestoreText, delay);
-        });
-        
-        // Surveillance continue avec setInterval
-        const preservationInterval = setInterval(() => {
-          const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
-          if (textarea && (window as any).celiaPreservedText) {
-            if (textarea.value !== (window as any).celiaPreservedText) {
-              console.log('🚨 Texte perdu détecté, restauration immédiate...');
-              forceRestoreText();
-            }
-          }
-        }, 200);
-        
-        // Nettoyer après 15 secondes
-        setTimeout(() => {
-          clearInterval(preservationInterval);
-          delete (window as any).celiaPreservedText;
-          console.log('🔒 Mode préservation désactivé');
-        }, 15000);
-      }
-      
-      // Scroll vers les résultats après un délai
-      setTimeout(() => {
-        if (resultsRef.current) {
-          resultsRef.current.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 500);
-    };
-
-    window.addEventListener('celiaAnalysisComplete', handleCeliaAnalysis as EventListener);
-
-    return () => {
-      window.removeEventListener('celiaAnalysisComplete', handleCeliaAnalysis as EventListener);
-    };
+    // Pas besoin de listener complexe, la démo utilise maintenant le callback direct
   }, []);
 
   const handleMoodAnalysis = async (mood: string, searchInLibrary: boolean = false) => {
@@ -207,7 +128,7 @@ function App() {
 
   const handleCeliaDemo = async (mood: string) => {
     console.log('🎪 Démo Célia déclenchée avec:', mood);
-    // Déclencher l'analyse normale avec le texte de Célia
+    // Déclencher l'analyse normale avec le texte de Célia, sans préservation du texte
     await handleMoodAnalysis(mood, false);
   };
 

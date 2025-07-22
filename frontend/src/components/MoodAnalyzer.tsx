@@ -51,6 +51,17 @@ const MoodAnalyzer: React.FC<MoodAnalyzerProps> = ({ onAnalyze, loading, analysi
     }
   };
 
+  const handleClick = () => {
+    // Si c'est le texte spécial de la démo Célia, le supprimer au premier clic
+    const celiaText = "Je cherche un jeu de MERDE qui ne plaît uniquement qu'à un gros CON";
+    if (mood === celiaText) {
+      console.log('🎪 Suppression du texte de démo au clic');
+      setMood('');
+      // Nettoyer le texte préservé dans la fenêtre
+      delete (window as any).celiaPreservedText;
+    }
+  };
+
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -105,12 +116,13 @@ const MoodAnalyzer: React.FC<MoodAnalyzerProps> = ({ onAnalyze, loading, analysi
                     onChange={(e) => setMood(e.target.value)}
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
+                    onClick={handleClick}
                     onDoubleClick={handleDoubleClick}
-                    placeholder="Décrivez votre humeur, vos envies, votre contexte... Plus vous êtes précis, meilleures seront les recommandations ! (Double-clic pour effacer)"
+                    placeholder="Décrivez votre humeur, vos envies, votre contexte... Plus vous êtes précis, meilleures seront les recommandations ! (Clic pour effacer le texte de démo)"
                     className="resize-none min-h-[80px]"
                     rows={3}
                     disabled={loading}
-                    title="Double-cliquez pour effacer le texte"
+                    title="Cliquez pour effacer le texte de démo, double-cliquez pour effacer tout texte"
                   />
                 </div>
                 
