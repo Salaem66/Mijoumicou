@@ -42,6 +42,15 @@ const MoodAnalyzer: React.FC<MoodAnalyzerProps> = ({ onAnalyze, loading, analysi
     }
   };
 
+  const handleDoubleClick = () => {
+    // Permettre de vider le texte avec un double-clic
+    setMood('');
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+      textareaRef.current.select();
+    }
+  };
+
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -96,10 +105,12 @@ const MoodAnalyzer: React.FC<MoodAnalyzerProps> = ({ onAnalyze, loading, analysi
                     onChange={(e) => setMood(e.target.value)}
                     onFocus={() => setFocused(true)}
                     onBlur={() => setFocused(false)}
-                    placeholder="Décrivez votre humeur, vos envies, votre contexte... Plus vous êtes précis, meilleures seront les recommandations !"
+                    onDoubleClick={handleDoubleClick}
+                    placeholder="Décrivez votre humeur, vos envies, votre contexte... Plus vous êtes précis, meilleures seront les recommandations ! (Double-clic pour effacer)"
                     className="resize-none min-h-[80px]"
                     rows={3}
                     disabled={loading}
+                    title="Double-cliquez pour effacer le texte"
                   />
                 </div>
                 
