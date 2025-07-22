@@ -67,7 +67,9 @@ class ApiService {
   }
 
   async getAllGames(): Promise<Game[]> {
-    return this.request<Game[]>('/games');
+    const response = await this.request<{ games?: Game[] } | Game[]>('/games');
+    // Handle both formats: { games: [] } or []
+    return Array.isArray(response) ? response : (response.games || []);
   }
 
   async getGamesByType(type: string): Promise<Game[]> {
