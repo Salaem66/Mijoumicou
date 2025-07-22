@@ -40,7 +40,10 @@ const StartPage: React.FC<StartPageProps> = ({ onStart }) => {
             className="max-w-3xl mx-auto"
           >
             <p className="text-xl md:text-2xl text-gray-700 leading-relaxed">
-              Est-ce que ça va nous rendre millionnaires??? Je vais pouvoir acheter une boulangerie???
+              Est-ce que ça va nous rendre millionnaires??? 
+            </p>
+            <p className="text-xl md:text-2xl text-gray-700 leading-relaxed">
+              Je vais pouvoir acheter une boulangerie???
             </p>
           </motion.div>
 
