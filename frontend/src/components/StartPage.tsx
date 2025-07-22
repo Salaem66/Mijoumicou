@@ -121,137 +121,31 @@ const StartPage: React.FC<StartPageProps> = ({ onStart }) => {
                             textarea.value = currentText;
                             textarea.focus();
                             
-                            // Méthode React 19 pour forcer la mise à jour du state
+                            // Méthode React pour forcer la mise à jour du state
                             const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
                             if (nativeInputValueSetter) {
                               nativeInputValueSetter.call(textarea, currentText);
                             }
                             
-                            // Créer un événement synthétique React approprié
-                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
-                            const event = {
-                              target: {
-                                value: currentText,
-                                name: textarea.name,
-                                type: textarea.type
-                              },
-                              currentTarget: {
-                                value: currentText,
-                                name: textarea.name,
-                                type: textarea.type
-                              },
-                              bubbles: true,
-                              cancelable: true,
-                              timeStamp: Date.now()
-                            };
-                            
                             // Déclencher les événements nécessaires pour React
                             textarea.dispatchEvent(new Event('input', { bubbles: true }));
                             textarea.dispatchEvent(new Event('change', { bubbles: true }));
-                            
-                            // Forcer React à détecter le changement
-                            const reactInternalInstance = (textarea as any)._valueTracker;
-                            if (reactInternalInstance) {
-                              reactInternalInstance.setValue('');
-                            }
-                            
-                            // Debug: vérifier l'état du bouton
-                            setTimeout(() => {
-                              const submitButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
-                              console.log('👀 État du bouton après frappe:', {
-                                disabled: submitButton?.disabled,
-                                textareaValue: textarea.value,
-                                textLength: textarea.value.length
-                              });
-                            }, 50);
                             
                             i++;
                             setTimeout(typeWriter, 120);
                           } else {
                             // Attendre un peu puis déclencher la soumission
                             setTimeout(() => {
-                              console.log('🎯 Bypass React - Appel direct à l\'API...');
+                              console.log('🎯 Déclenchement de l\'analyse pour la démo Célia...');
                               
-                              // Vérifier l'état final
-                              console.log('📝 État final:', {
-                                textareaValue: textarea.value,
-                                textLength: textarea.value.length
-                              });
-                              
-                              // Plan A: Appel direct à l'API en bypassant React
-                              const mood = textarea.value;
-                              if (mood && mood.length > 0) {
-                                console.log('🚀 Lancement de l\'analyse directe avec:', mood);
-                                
-                                fetch('http://localhost:3001/api/recommend/advanced', {
-                                  method: 'POST',
-                                  headers: {
-                                    'Content-Type': 'application/json',
-                                  },
-                                  body: JSON.stringify({ mood: mood })
-                                })
-                                .then(response => response.json())
-                                .then(data => {
-                                  console.log('✅ Résultats reçus:', data);
-                                  
-                                  // Easter egg: pour cette phrase spécifique, ne montrer que Perudo
-                                  const easterEggPhrase = "Je cherche un jeu de MERDE qui ne plaît uniquement qu'à un gros CON";
-                                  let finalData = data;
-                                  
-                                  if (mood === easterEggPhrase) {
-                                    console.log('🥚 Easter egg détecté ! Filtrage pour Perudo uniquement...');
-                                    const perudoGame = data.recommendations?.find((game: any) => game.nom === 'Perudo');
-                                    if (perudoGame) {
-                                      finalData = {
-                                        ...data,
-                                        recommendations: [perudoGame],
-                                        analysis: {
-                                          ...data.analysis,
-                                          detected_tags: ['easter egg', 'perudo', 'merde', 'con'],
-                                          confidence_score: 100
-                                        },
-                                        explanations: [
-                                          '🥚 Easter egg détecté !',
-                                          '🎯 Perudo est LE jeu de MERDE parfait pour un gros CON !',
-                                          '😄 Bravo d\'avoir trouvé ce message caché de Célia !',
-                                          '🎪 L\'IA a un sens de l\'humour... douteux mais efficace !'
-                                        ]
-                                      };
-                                      console.log('🎊 Perudo sélectionné comme résultat unique !');
-                                    }
-                                  }
-                                  
-                                  // Créer un événement personnalisé pour passer les données à l'app
-                                  const analysisEvent = new CustomEvent('celiaAnalysisComplete', {
-                                    detail: { 
-                                      mood: mood,
-                                      results: finalData,
-                                      keepText: true // Flag pour garder le texte
-                                    }
-                                  });
-                                  window.dispatchEvent(analysisEvent);
-                                  
-                                  // Rediriger vers la page de résultats ou mettre à jour l'UI
-                                  const resultsSection = document.querySelector('[data-testid="results"]');
-                                  if (resultsSection) {
-                                    resultsSection.scrollIntoView({ behavior: 'smooth' });
-                                  }
-                                })
-                                .catch(error => {
-                                  console.error('❌ Erreur lors de l\'analyse:', error);
-                                  
-                                  // Plan B: Forcer le clic sur le bouton même s'il est disabled
-                                  const submitButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
-                                  if (submitButton) {
-                                    console.log('🔧 Fallback: forçage du bouton...');
-                                    submitButton.disabled = false;
-                                    submitButton.click();
-                                  }
-                                });
-                              } else {
-                                console.log('❌ Pas de texte à analyser');
+                              // Déclencher l'analyse normale en cliquant sur le bouton
+                              const submitButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+                              if (submitButton) {
+                                console.log('🔥 Clic automatique sur le bouton d\'analyse...');
+                                submitButton.disabled = false;
+                                submitButton.click();
                               }
-                            }, 2500);
+                            }, 1500);
                           }
                         };
                         
