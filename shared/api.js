@@ -7,53 +7,69 @@ const isLocal = !isNetlify;
 
 let gamesData;
 
+// Fonction pour convertir les nombres décimaux en entiers
+function convertToIntegers(obj) {
+  if (Array.isArray(obj)) {
+    return obj.map(convertToIntegers);
+  } else if (obj !== null && typeof obj === 'object') {
+    const newObj = {};
+    for (const [key, value] of Object.entries(obj)) {
+      newObj[key] = convertToIntegers(value);
+    }
+    return newObj;
+  } else if (typeof obj === 'number' && !Number.isInteger(obj)) {
+    return Math.round(obj);
+  }
+  return obj;
+}
+
 // Charger les données selon l'environnement
 if (isNetlify) {
   // Pour Netlify, charger directement le JSON
-  gamesData = require('../api/games_data.json');
+  gamesData = convertToIntegers(require('../api/games_data.json'));
 } else {
   // Pour local, charger depuis le dossier backend
   const gamesPath = path.join(__dirname, '../backend/games_data.json');
-  gamesData = JSON.parse(fs.readFileSync(gamesPath, 'utf8'));
+  gamesData = convertToIntegers(JSON.parse(fs.readFileSync(gamesPath, 'utf8')));
 }
 
-// Analyseur d'humeur simplifié
+// Analyseur d'humeur simplifié (nombres entiers uniquement)
 const synonymDictionary = {
-  'tranquille': { niveau_social: 2.0, energie_requise: 2.0 },
-  'calme': { niveau_social: 2.0, energie_requise: 2.0 },
-  'reposant': { tension_niveau: 1.5, energie_requise: 2.0 },
-  'energique': { energie_requise: 4.5, niveau_social: 4.0 },
-  'fun': { energie_requise: 4.0, niveau_social: 4.0, facteur_chance: 3.5 },
-  'rigoler': { energie_requise: 4.0, niveau_social: 4.5, facteur_chance: 3.5 },
-  'amis': { niveau_social: 4.5, joueurs_ideal: 4 },
-  'famille': { niveau_social: 3.5, complexite: 2.5 },
-  'simple': { complexite: 2.0, courbe_apprentissage: 2.0 },
-  'complexe': { complexite: 4.0, courbe_apprentissage: 4.0 },
+  'tranquille': { niveau_social: 2, energie_requise: 2 },
+  'calme': { niveau_social: 2, energie_requise: 2 },
+  'reposant': { tension_niveau: 2, energie_requise: 2 },
+  'energique': { energie_requise: 5, niveau_social: 4 },
+  'fun': { energie_requise: 4, niveau_social: 4, facteur_chance: 4 },
+  'rigoler': { energie_requise: 4, niveau_social: 5, facteur_chance: 4 },
+  'amis': { niveau_social: 5, joueurs_ideal: 4 },
+  'famille': { niveau_social: 4, complexite: 3 },
+  'simple': { complexite: 2, courbe_apprentissage: 2 },
+  'complexe': { complexite: 4, courbe_apprentissage: 4 },
   'rapide': { duree_moyenne: 30 },
   'long': { duree_moyenne: 120 },
-  'strategie': { complexite: 3.5, tension_niveau: 3.0 },
-  'chance': { facteur_chance: 4.0, complexite: 2.0 },
-  'bluff': { niveau_social: 4.0, tension_niveau: 3.5 },
-  'cooperatif': { niveau_conflit: 1.5, niveau_social: 4.0 },
-  'compétitif': { niveau_conflit: 4.0, tension_niveau: 3.5 },
-  'nul': { energie_requise: 3.5, niveau_social: 4.5, facteur_chance: 4.0 },
-  'con': { energie_requise: 3.5, niveau_social: 4.5, facteur_chance: 4.0 },
-  'merde': { energie_requise: 3.5, niveau_social: 4.5, facteur_chance: 4.0 }
+  'strategie': { complexite: 4, tension_niveau: 3 },
+  'chance': { facteur_chance: 4, complexite: 2 },
+  'bluff': { niveau_social: 4, tension_niveau: 4 },
+  'cooperatif': { niveau_conflit: 2, niveau_social: 4 },
+  'compétitif': { niveau_conflit: 4, tension_niveau: 4 },
+  'nul': { energie_requise: 4, niveau_social: 5, facteur_chance: 4 },
+  'con': { energie_requise: 4, niveau_social: 5, facteur_chance: 4 },
+  'merde': { energie_requise: 4, niveau_social: 5, facteur_chance: 4 }
 };
 
 function analyzeMood(mood) {
   const moodLower = mood.toLowerCase();
   const detected_tags = [];
   let moodProfile = {
-    energie_requise: 3.0,
-    niveau_social: 3.0,
-    facteur_chance: 3.0,
-    tension_niveau: 3.0,
-    complexite: 3.0,
+    energie_requise: 3,
+    niveau_social: 3,
+    facteur_chance: 3,
+    tension_niveau: 3,
+    complexite: 3,
     duree_moyenne: 60,
-    courbe_apprentissage: 3.0,
-    rejouabilite: 3.0,
-    niveau_conflit: 3.0
+    courbe_apprentissage: 3,
+    rejouabilite: 3,
+    niveau_conflit: 3
   };
 
   for (const [keyword, values] of Object.entries(synonymDictionary)) {
@@ -92,7 +108,7 @@ function calculateCompatibilityScores(games, analysis) {
 
     return {
       ...game,
-      compatibility_score: Math.min(100, Math.max(0, score / 5))
+      compatibility_score: Math.round(Math.min(100, Math.max(0, score / 5)))
     };
   });
 }
@@ -118,15 +134,15 @@ function processRecommendations(mood, libraryOnly = false, gameIds = []) {
         mood_analysis: {
           detected_tags: ['easter egg', 'perudo', 'merde', 'con'],
           confidence_score: 100,
-          energie_requise: 3.5,
-          niveau_social: 4.5,
-          facteur_chance: 4.0,
-          tension_niveau: 3.5,
-          complexite: 2.0,
+          energie_requise: 4,
+          niveau_social: 5,
+          facteur_chance: 4,
+          tension_niveau: 4,
+          complexite: 2,
           duree_moyenne: 30,
-          courbe_apprentissage: 2.0,
-          rejouabilite: 4.0,
-          niveau_conflit: 3.0
+          courbe_apprentissage: 2,
+          rejouabilite: 4,
+          niveau_conflit: 3
         },
         recommendations: [perudoGame],
         explanations: [
@@ -157,7 +173,7 @@ function processRecommendations(mood, libraryOnly = false, gameIds = []) {
   ];
 
   if (recommendations.length > 0) {
-    explanations.push(`🎮 Top: ${recommendations[0].nom} (${Math.round(recommendations[0].compatibility_score)}% compatible)`);
+    explanations.push(`🎮 Top: ${recommendations[0].nom} (${recommendations[0].compatibility_score}% compatible)`);
   }
   
   return {
@@ -174,7 +190,7 @@ function getStats() {
   const stats = {
     total_games: gamesData.length,
     by_type: {},
-    average_duration: gamesData.reduce((sum, game) => sum + game.duree_moyenne, 0) / gamesData.length
+    average_duration: Math.round(gamesData.reduce((sum, game) => sum + game.duree_moyenne, 0) / gamesData.length)
   };
   
   gamesData.forEach(game => {
