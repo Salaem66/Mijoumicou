@@ -117,35 +117,70 @@ const StartPage: React.FC<StartPageProps> = ({ onStart }) => {
                           if (i < celiaExample.length) {
                             const currentText = celiaExample.substring(0, i + 1);
                             
-                            // Set value et focus
-                            textarea.value = currentText;
-                            textarea.focus();
-                            
-                            // Méthode React pour forcer la mise à jour du state
+                            // Mise à jour agressive du textarea pour React
                             const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
                             if (nativeInputValueSetter) {
                               nativeInputValueSetter.call(textarea, currentText);
                             }
+                            textarea.value = currentText;
                             
-                            // Déclencher les événements nécessaires pour React
-                            textarea.dispatchEvent(new Event('input', { bubbles: true }));
-                            textarea.dispatchEvent(new Event('change', { bubbles: true }));
+                            // Forcer React à détecter le changement avec tous les événements possibles
+                            ['input', 'change', 'keyup', 'paste'].forEach(eventType => {
+                              const event = new Event(eventType, { bubbles: true });
+                              Object.defineProperty(event, 'target', { writable: false, value: textarea });
+                              textarea.dispatchEvent(event);
+                            });
+                            
+                            // Forcer la synchronisation avec React
+                            const reactInternalInstance = (textarea as any)._valueTracker;
+                            if (reactInternalInstance) {
+                              reactInternalInstance.setValue('');
+                            }
+                            
+                            textarea.focus();
                             
                             i++;
-                            setTimeout(typeWriter, 120);
+                            setTimeout(typeWriter, 100);
                           } else {
-                            // Attendre un peu puis déclencher la soumission
+                            // Attendre puis déclencher la soumission avec le texte final
                             setTimeout(() => {
-                              console.log('🎯 Déclenchement de l\'analyse pour la démo Célia...');
+                              console.log('🎯 Finalisation de la démo Célia...');
                               
-                              // Déclencher l'analyse normale en cliquant sur le bouton
-                              const submitButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
-                              if (submitButton) {
-                                console.log('🔥 Clic automatique sur le bouton d\'analyse...');
-                                submitButton.disabled = false;
-                                submitButton.click();
+                              // S'assurer que le texte est bien présent
+                              const finalText = celiaExample;
+                              textarea.value = finalText;
+                              
+                              // Dernière tentative de synchronisation React
+                              const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
+                              if (nativeInputValueSetter) {
+                                nativeInputValueSetter.call(textarea, finalText);
                               }
-                            }, 1500);
+                              
+                              ['input', 'change'].forEach(eventType => {
+                                const event = new Event(eventType, { bubbles: true });
+                                Object.defineProperty(event, 'target', { writable: false, value: textarea });
+                                textarea.dispatchEvent(event);
+                              });
+                              
+                              // Déclencher l'analyse
+                              setTimeout(() => {
+                                const submitButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+                                if (submitButton && !submitButton.disabled) {
+                                  console.log('🔥 Déclenchement automatique de l\'analyse...');
+                                  submitButton.click();
+                                } else {
+                                  console.log('❌ Bouton non disponible, nouvelle tentative...');
+                                  // Nouvelle tentative
+                                  setTimeout(() => {
+                                    const retryButton = document.querySelector('button[type="submit"]') as HTMLButtonElement;
+                                    if (retryButton) {
+                                      retryButton.disabled = false;
+                                      retryButton.click();
+                                    }
+                                  }, 500);
+                                }
+                              }, 300);
+                            }, 1000);
                           }
                         };
                         
