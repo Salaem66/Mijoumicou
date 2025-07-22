@@ -104,13 +104,52 @@ const StartPage: React.FC<StartPageProps> = ({ onStart, onCeliaDemo }) => {
                   (window as any).startCeliaDemo = () => {
                     onStart();
                     
-                    // Utiliser la fonction callback si disponible
-                    if (onCeliaDemo) {
-                      console.log('🎪 Démo Célia via callback...');
-                      setTimeout(() => {
-                        onCeliaDemo("Je cherche un jeu de MERDE qui ne plaît uniquement qu'à un gros CON");
-                      }, 1500);
-                    }
+                    setTimeout(() => {
+                      // Auto-remplir avec un exemple spécial pour Célia (animation visuelle)
+                      const textarea = document.querySelector('textarea') as HTMLTextAreaElement;
+                      if (textarea) {
+                        const celiaExample = "Je cherche un jeu de MERDE qui ne plaît uniquement qu'à un gros CON";
+                        let i = 0;
+                        
+                        // Reset initial
+                        textarea.value = "";
+                        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                        
+                        const typeWriter = () => {
+                          if (i < celiaExample.length) {
+                            const currentText = celiaExample.substring(0, i + 1);
+                            
+                            // Mise à jour visuelle du textarea
+                            textarea.value = currentText;
+                            textarea.focus();
+                            
+                            // Forcer React à détecter le changement
+                            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value")?.set;
+                            if (nativeInputValueSetter) {
+                              nativeInputValueSetter.call(textarea, currentText);
+                            }
+                            
+                            // Déclencher les événements React
+                            textarea.dispatchEvent(new Event('input', { bubbles: true }));
+                            textarea.dispatchEvent(new Event('change', { bubbles: true }));
+                            
+                            i++;
+                            setTimeout(typeWriter, 120);
+                          } else {
+                            // Une fois l'animation terminée, utiliser le callback pour garantir le résultat
+                            setTimeout(() => {
+                              console.log('🎪 Animation terminée, déclenchement via callback...');
+                              if (onCeliaDemo) {
+                                onCeliaDemo(celiaExample);
+                              }
+                            }, 1000);
+                          }
+                        };
+                        
+                        // Commencer la frappe après un petit délai
+                        setTimeout(typeWriter, 500);
+                      }
+                    }, 1000);
                   };
                 }}
                 variant="outline"
