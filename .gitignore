@@ -105,3 +105,6 @@ backend/logs/
 
 # Local Netlify folder
 .netlify
+
+# MCP configuration (contains sensitive tokens)
+.mcp.json
