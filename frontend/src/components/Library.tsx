@@ -28,7 +28,7 @@ const LibraryComponent: React.FC<LibraryProps> = ({ allGames, onClose, onOpenGam
     const games = allGames.filter(game => gameIds.includes(game.id.toString()));
     setLibraryGames(games);
     setStats(getLibraryStats());
-  }, [allGames, getGameIds]);
+  }, [allGames, getGameIds, getLibraryStats]);
 
   // Filtrer les jeux selon le terme de recherche
   useEffect(() => {

@@ -128,6 +128,7 @@ const StartPage: React.FC<StartPageProps> = ({ onStart }) => {
                             }
                             
                             // Créer un événement synthétique React approprié
+                            // eslint-disable-next-line @typescript-eslint/no-unused-vars
                             const event = {
                               target: {
                                 value: currentText,
