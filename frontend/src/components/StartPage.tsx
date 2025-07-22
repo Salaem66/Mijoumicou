@@ -82,7 +82,7 @@ const StartPage: React.FC<StartPageProps> = ({ onStart }) => {
                       <div style="text-align: center; max-width: 600px; padding: 2rem;">
                         <h1 style="font-size: 3rem; margin-bottom: 2rem; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); 
                                    -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
-                           Célia.
+                           Célia,
                         </h1>
                         <p style="font-size: 1.5rem; margin-bottom: 2rem; line-height: 1.6;">
                           Tu te rappelles ce que tu m'as dit après avoir commandé ton Salamèche, avec la boîte de Maudit Mot Dit dans les mains, juste avant de te faire détruire au Sling Hockey ???<br><br>
