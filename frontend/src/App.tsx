@@ -542,8 +542,59 @@ function AppContent() {
   );
 }
 
-// Wrapper principal avec AuthProvider
+// Composant d'erreur de configuration
+function ConfigurationError({ error }: { error: Error }) {
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-red-50 via-orange-50 to-yellow-100 flex items-center justify-center p-4">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center border-l-4 border-red-500"
+      >
+        <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-6">
+          <Sparkles size={32} className="text-red-600" />
+        </div>
+        <h1 className="text-2xl font-bold text-red-600 mb-4">
+          Erreur de Configuration
+        </h1>
+        <p className="text-gray-600 mb-4">
+          L'application ne peut pas se connecter à la base de données.
+        </p>
+        <div className="bg-gray-50 rounded-lg p-4 mb-6 text-left">
+          <p className="text-sm text-gray-700 font-mono">
+            {error.message}
+          </p>
+        </div>
+        <p className="text-sm text-gray-500">
+          Veuillez vérifier la configuration des variables d'environnement.
+        </p>
+      </motion.div>
+    </div>
+  );
+}
+
+// Wrapper principal avec AuthProvider et gestion d'erreurs
 function App() {
+  const [configError, setConfigError] = React.useState<Error | null>(null);
+
+  React.useEffect(() => {
+    // Tester la configuration Supabase au démarrage
+    try {
+      // Importer le module supabase pour déclencher la validation
+      import('./lib/supabase').catch((error) => {
+        console.error('❌ Erreur de configuration Supabase:', error);
+        setConfigError(error);
+      });
+    } catch (error) {
+      console.error('❌ Erreur de configuration Supabase:', error);
+      setConfigError(error instanceof Error ? error : new Error('Erreur de configuration inconnue'));
+    }
+  }, []);
+
+  if (configError) {
+    return <ConfigurationError error={configError} />;
+  }
+
   return (
     <AuthProvider>
       <AppContent />

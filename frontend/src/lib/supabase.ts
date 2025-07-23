@@ -1,9 +1,20 @@
 import { createClient } from '@supabase/supabase-js'
 import type { Database } from '../types/database'
 
-// Configuration Supabase
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'YOUR_SUPABASE_URL'
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY'
+// Configuration Supabase avec validation
+const supabaseUrl = process.env.REACT_APP_SUPABASE_URL
+const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY
+
+// Vérification des variables d'environnement
+if (!supabaseUrl || supabaseUrl === 'YOUR_SUPABASE_URL' || !supabaseUrl.startsWith('https://')) {
+  console.error('❌ Variable d\'environnement REACT_APP_SUPABASE_URL manquante ou invalide')
+  throw new Error('Configuration Supabase incomplète: URL manquante')
+}
+
+if (!supabaseAnonKey || supabaseAnonKey === 'YOUR_SUPABASE_ANON_KEY') {
+  console.error('❌ Variable d\'environnement REACT_APP_SUPABASE_ANON_KEY manquante ou invalide')
+  throw new Error('Configuration Supabase incomplète: clé anonyme manquante')
+}
 
 // Créer le client Supabase avec typage TypeScript
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
