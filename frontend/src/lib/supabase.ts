@@ -155,10 +155,13 @@ export class GameService {
 
 // Service de bibliothèque utilisateur
 export class LibraryService {
-  static async getUserLibrary(userId: string): Promise<UserLibrary[]> {
+  static async getUserLibrary(userId: string): Promise<any[]> {
     const { data, error } = await supabase
-      .from('user_library_with_games') // Utiliser la vue créée
-      .select('*')
+      .from('user_libraries')
+      .select(`
+        *,
+        games (*)
+      `)
       .eq('user_id', userId)
       .order('added_at', { ascending: false })
     

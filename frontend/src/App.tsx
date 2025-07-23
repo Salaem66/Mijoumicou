@@ -1,33 +1,39 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, BookOpen, TrendingUp, Clock, Library, Grid, Plus } from 'lucide-react';
+import { Sparkles, BookOpen, TrendingUp, Clock, Library, Grid, Plus, User, LogOut } from 'lucide-react';
 import StartPage from './components/StartPage';
 import MoodAnalyzer from './components/MoodAnalyzer';
 import GameCard from './components/GameCard';
 import GameModal from './components/GameModal';
-import LibraryComponent from './components/Library';
+import PersonalLibrary from './components/PersonalLibrary';
+import UserProfile from './components/UserProfile';
 import AllGames from './components/AllGames';
 import AddGameForm from './components/AddGameForm';
+import { AuthModal } from './components/auth/AuthModal';
+import { AuthProvider, useAuth } from './hooks/useAuth';
 import { apiService } from './services/api';
 import { RecommendationResponse, Game } from './types';
 import { Button } from './components/ui/button';
 import { useLibrary } from './services/library';
 import './App.css';
 
-function App() {
+function AppContent() {
+  const { user, profile, signOut, loading } = useAuth();
   const [showStartPage, setShowStartPage] = useState(true);
+  const [showAuthModal, setShowAuthModal] = useState(false);
   const [recommendations, setRecommendations] = useState<RecommendationResponse | null>(null);
   const [allGames, setAllGames] = useState<Game[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [apiLoading, setApiLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [stats, setStats] = useState<any>(null);
   const [activeModalGame, setActiveModalGame] = useState<Game | null>(null);
   const [modalOrigin, setModalOrigin] = useState<{ x: number; y: number } | null>(null);
-  const [showLibrary, setShowLibrary] = useState(false);
+  const [showPersonalLibrary, setShowPersonalLibrary] = useState(false);
+  const [showUserProfile, setShowUserProfile] = useState(false);
   const [showAllGames, setShowAllGames] = useState(false);
   const [showAddGame, setShowAddGame] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
-  const { getGameCount, getGameIds } = useLibrary();
+  const { getGameIds } = useLibrary();
 
   useEffect(() => {
     // Charger les statistiques et tous les jeux au démarrage
@@ -50,7 +56,7 @@ function App() {
   }, []);
 
   const handleMoodAnalysis = async (mood: string, searchInLibrary: boolean = false) => {
-    setLoading(true);
+    setApiLoading(true);
     setError(null);
 
     try {
@@ -88,7 +94,7 @@ function App() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue');
     } finally {
-      setLoading(false);
+      setApiLoading(false);
     }
   };
 
@@ -140,6 +146,58 @@ function App() {
     console.log('Nouveau jeu ajouté:', newGame.nom);
   };
 
+  // Afficher l'écran de chargement pendant l'authentification
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Forcer la connexion - afficher uniquement la modal d'auth si pas connecté
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center"
+        >
+          <div className="w-16 h-16 bg-gradient-to-r from-purple-600 to-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+            <Sparkles size={32} className="text-white" />
+          </div>
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-4">
+            Mijoumicou
+          </h1>
+          <p className="text-gray-600 mb-6">
+            Découvrez le jeu parfait grâce à l'intelligence artificielle. 
+            Connectez-vous pour commencer !
+          </p>
+          <Button
+            onClick={() => setShowAuthModal(true)}
+            className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+          >
+            <User size={20} className="mr-2" />
+            Se connecter
+          </Button>
+          
+          <AuthModal
+            isOpen={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
+            onSuccess={() => {
+              setShowAuthModal(false);
+              console.log('🎉 Utilisateur connecté avec succès !');
+            }}
+          />
+        </motion.div>
+      </div>
+    );
+  }
+
   return (
     <AnimatePresence mode="wait">
       {showStartPage ? (
@@ -165,9 +223,13 @@ function App() {
       <header className="relative overflow-hidden bg-white shadow-lg">
         <div className="absolute inset-0 bg-gradient-to-r from-purple-600 to-blue-600 opacity-10"></div>
         
-        {/* Boutons de navigation */}
-        <div className="absolute top-4 right-4 z-10">
-          <div className="flex space-x-2">
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Boutons de navigation avec authentification */}
+          <div className="flex justify-end pt-4 pb-2">
+            <div className="flex flex-wrap gap-2">
+            {/* Eviter le clignotement pendant le chargement */}
+            {!loading && (
+              <>
             <Button
               onClick={() => setShowAllGames(true)}
               variant="outline"
@@ -185,18 +247,53 @@ function App() {
               <Plus size={16} className="mr-2" />
               Ajouter un jeu
             </Button>
+            
             <Button
-              onClick={() => setShowLibrary(true)}
+              onClick={() => setShowPersonalLibrary(true)}
               variant="outline"
               className="bg-white/80 backdrop-blur-sm border-purple-200 text-purple-700 hover:bg-purple-50"
             >
               <Library size={16} className="mr-2" />
-              Ma bibliothèque ({getGameCount()})
+              Ma bibliothèque
             </Button>
+
+            {/* Authentification */}
+            {user ? (
+              <>
+                <Button
+                  onClick={() => setShowUserProfile(true)}
+                  variant="outline"
+                  className="bg-white/80 backdrop-blur-sm border-green-200 text-green-700 hover:bg-green-50"
+                >
+                  <User size={16} className="mr-2" />
+                  {profile?.username || profile?.full_name || 'Mon profil'}
+                </Button>
+                <Button
+                  onClick={signOut}
+                  variant="outline"
+                  className="bg-white/80 backdrop-blur-sm border-red-200 text-red-700 hover:bg-red-50"
+                >
+                  <LogOut size={16} className="mr-2" />
+                  Déconnexion
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => setShowAuthModal(true)}
+                variant="outline"
+                className="bg-white/80 backdrop-blur-sm border-blue-200 text-blue-700 hover:bg-blue-50"
+              >
+                <User size={16} className="mr-2" />
+                Se connecter
+              </Button>
+            )}
+              </>
+            )}
+            </div>
           </div>
-        </div>
         
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Contenu principal du header */}
+          <div className="py-8">
           <div className="text-center">
             <motion.div
               initial={{ opacity: 0, y: -20 }}
@@ -244,6 +341,7 @@ function App() {
               </motion.div>
             )}
           </div>
+          </div>
         </div>
       </header>
 
@@ -253,7 +351,7 @@ function App() {
         <div className="mb-12">
           <MoodAnalyzer
             onAnalyze={handleMoodAnalysis}
-            loading={loading}
+            loading={apiLoading}
             analysis={recommendations?.mood_analysis}
             error={error}
           />
@@ -336,7 +434,7 @@ function App() {
         </AnimatePresence>
 
         {/* Section de découverte quand pas de recommandations */}
-        {!recommendations && !loading && allGames.length > 0 && (
+        {!recommendations && !apiLoading && allGames.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -388,13 +486,21 @@ function App() {
             origin={modalOrigin}
           />
 
-          {/* Bibliothèque */}
+          {/* Bibliothèque personnelle Supabase */}
           <AnimatePresence>
-            {showLibrary && (
-              <LibraryComponent
-                allGames={allGames}
-                onClose={() => setShowLibrary(false)}
+            {showPersonalLibrary && (
+              <PersonalLibrary
+                onClose={() => setShowPersonalLibrary(false)}
                 onOpenGameModal={handleOpenModal}
+              />
+            )}
+          </AnimatePresence>
+
+          {/* Profil utilisateur */}
+          <AnimatePresence>
+            {showUserProfile && (
+              <UserProfile
+                onClose={() => setShowUserProfile(false)}
               />
             )}
           </AnimatePresence>
@@ -419,9 +525,29 @@ function App() {
               />
             )}
           </AnimatePresence>
+
+          {/* Modal d'authentification */}
+          <AuthModal
+            isOpen={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
+            onSuccess={() => {
+              setShowAuthModal(false);
+              // Optionnel: message de bienvenue
+              console.log('🎉 Utilisateur connecté avec succès !');
+            }}
+          />
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+// Wrapper principal avec AuthProvider
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

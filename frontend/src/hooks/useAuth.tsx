@@ -1,4 +1,4 @@
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react'
+import { useState, useEffect, createContext, useContext, ReactNode, useCallback } from 'react'
 import { User as SupabaseUser } from '@supabase/supabase-js'
 import { AuthService, UserProfileService, User } from '../lib/supabase'
 
@@ -29,7 +29,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [profile, setProfile] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const refreshProfile = async () => {
+  const refreshProfile = useCallback(async () => {
     if (!user) {
       setProfile(null)
       return
@@ -54,7 +54,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       console.error('Erreur lors du chargement du profil:', error)
       setProfile(null)
     }
-  }
+  }, [user])
 
   useEffect(() => {
     // Récupérer la session actuelle
@@ -81,14 +81,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     )
 
     return () => subscription.unsubscribe()
-  }, [])
+  }, [refreshProfile])
 
-  // Charger le profil quand l'utilisateur change
+  // Charger le profil quand l'utilisateur change (une seule fois)
   useEffect(() => {
-    if (user && !loading) {
+    if (user && !loading && !profile) {
       refreshProfile()
     }
-  }, [user, loading])
+  }, [user, loading, profile, refreshProfile])
 
   const signOut = async () => {
     await AuthService.signOut()
