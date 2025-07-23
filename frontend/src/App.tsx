@@ -14,7 +14,6 @@ import { AuthProvider, useAuth } from './hooks/useAuth';
 import { apiService } from './services/api';
 import { RecommendationResponse, Game } from './types';
 import { Button } from './components/ui/button';
-import { useLibrary } from './services/library';
 import './App.css';
 
 function AppContent() {
@@ -33,7 +32,6 @@ function AppContent() {
   const [showAllGames, setShowAllGames] = useState(false);
   const [showAddGame, setShowAddGame] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
-  const { getGameIds } = useLibrary();
 
   useEffect(() => {
     // Charger les statistiques et tous les jeux au démarrage
@@ -60,22 +58,30 @@ function AppContent() {
     setError(null);
 
     try {
-      const libraryIds = getGameIds();
-      console.log('🔍 Recherche dans la bibliothèque:', searchInLibrary);
-      console.log('📚 Jeux dans la bibliothèque:', libraryIds);
-      console.log('📊 Nombre de jeux dans la bibliothèque:', libraryIds.length);
+      let libraryIds: string[] = [];
       
-      // Vérifier si la bibliothèque est vide lors d'une recherche dans la bibliothèque
-      if (searchInLibrary && libraryIds.length === 0) {
-        setError('Votre bibliothèque est vide. Ajoutez des jeux à votre bibliothèque pour utiliser cette fonctionnalité.');
-        return;
+      // Si recherche dans la bibliothèque, récupérer les IDs depuis Supabase
+      if (searchInLibrary && user) {
+        const { LibraryService } = await import('./lib/supabase');
+        const libraryData = await LibraryService.getUserLibrary(user.id);
+        libraryIds = libraryData.map(item => item.game_id.toString());
+        
+        console.log('🔍 Recherche dans la bibliothèque Supabase:', searchInLibrary);
+        console.log('📚 Jeux dans la bibliothèque:', libraryIds);
+        console.log('📊 Nombre de jeux dans la bibliothèque:', libraryIds.length);
+        
+        // Vérifier si la bibliothèque est vide lors d'une recherche dans la bibliothèque
+        if (libraryIds.length === 0) {
+          setError('Votre bibliothèque est vide. Ajoutez des jeux à votre bibliothèque pour utiliser cette fonctionnalité.');
+          return;
+        }
       }
       
-      // Utiliser la nouvelle API avec support natif de la bibliothèque
+      // Utiliser l'API avec support de la bibliothèque Supabase
       const response = await apiService.getRecommendations(
         mood, 
         searchInLibrary, 
-        searchInLibrary ? libraryIds : []
+        libraryIds
       );
       
       console.log('🎯 Recommandations reçues:', response.recommendations.length);

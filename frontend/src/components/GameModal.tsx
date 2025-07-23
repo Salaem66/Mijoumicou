@@ -6,7 +6,8 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
-import { useLibrary } from '../services/library';
+import { useAuth } from '../hooks/useAuth';
+import { LibraryService } from '../lib/supabase';
 
 interface GameModalProps {
   game: Game | null;
@@ -117,20 +118,44 @@ const getGameObjective = (game: Game): string => {
 };
 
 const GameModal: React.FC<GameModalProps> = ({ game, isOpen, onClose, origin }) => {
-  const { addGame, removeGame, hasGame } = useLibrary();
-  const [inLibrary, setInLibrary] = useState(game ? hasGame(game.id.toString()) : false);
+  const { user } = useAuth();
+  const [inLibrary, setInLibrary] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  // Vérifier si le jeu est dans la bibliothèque au chargement
+  React.useEffect(() => {
+    const checkLibraryStatus = async () => {
+      if (!user || !game) return;
+      
+      try {
+        const isInLibrary = await LibraryService.isInLibrary(user.id, game.id);
+        setInLibrary(isInLibrary);
+      } catch (error) {
+        console.error('Erreur lors de la vérification de la bibliothèque:', error);
+      }
+    };
+
+    checkLibraryStatus();
+  }, [user, game]);
 
   if (!game) return null;
 
-  const handleLibraryToggle = () => {
-    const gameId = game.id.toString();
+  const handleLibraryToggle = async () => {
+    if (!user) return;
     
-    if (inLibrary) {
-      removeGame(gameId);
-      setInLibrary(false);
-    } else {
-      addGame(gameId);
-      setInLibrary(true);
+    setLoading(true);
+    try {
+      if (inLibrary) {
+        await LibraryService.removeFromLibrary(user.id, game.id);
+        setInLibrary(false);
+      } else {
+        await LibraryService.addToLibrary(user.id, game.id);
+        setInLibrary(true);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la modification de la bibliothèque:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -246,12 +271,19 @@ const GameModal: React.FC<GameModalProps> = ({ game, isOpen, onClose, origin }) 
               <div className="absolute top-4 right-4 flex space-x-2">
                 <Button
                   onClick={handleLibraryToggle}
+                  disabled={!user || loading}
                   variant="ghost"
                   size="icon"
                   className={`p-2 hover:bg-white hover:bg-opacity-20 text-white ${inLibrary ? 'bg-white bg-opacity-20' : ''}`}
-                  title={inLibrary ? 'Retirer de ma bibliothèque' : 'Ajouter à ma bibliothèque'}
+                  title={loading ? 'Chargement...' : inLibrary ? 'Retirer de ma bibliothèque' : 'Ajouter à ma bibliothèque'}
                 >
-                  {inLibrary ? <BookmarkCheck size={20} /> : <BookmarkPlus size={20} />}
+                  {loading ? (
+                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-current"></div>
+                  ) : inLibrary ? (
+                    <BookmarkCheck size={20} />
+                  ) : (
+                    <BookmarkPlus size={20} />
+                  )}
                 </Button>
                 <Button
                   onClick={onClose}

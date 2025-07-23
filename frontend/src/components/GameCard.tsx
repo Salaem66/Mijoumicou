@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Users, Zap, Brain, Target, Shield, TrendingUp, BookmarkPlus, BookmarkCheck } from 'lucide-react';
 import { Game } from '../types';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader } from './ui/card';
 import { Badge } from './ui/badge';
-import { useLibrary } from '../services/library';
+import { useAuth } from '../hooks/useAuth';
+import { LibraryService } from '../lib/supabase';
 
 interface GameCardProps {
   game: Game;
@@ -15,19 +16,43 @@ interface GameCardProps {
 }
 
 const GameCard: React.FC<GameCardProps> = ({ game, rank, showCompatibility = false, onOpenModal }) => {
-  const { addGame, removeGame, hasGame } = useLibrary();
-  const [inLibrary, setInLibrary] = useState(hasGame(game.id.toString()));
+  const { user } = useAuth();
+  const [inLibrary, setInLibrary] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleLibraryToggle = (e: React.MouseEvent) => {
+  // Vérifier si le jeu est dans la bibliothèque au chargement
+  useEffect(() => {
+    const checkLibraryStatus = async () => {
+      if (!user) return;
+      
+      try {
+        const isInLibrary = await LibraryService.isInLibrary(user.id, game.id);
+        setInLibrary(isInLibrary);
+      } catch (error) {
+        console.error('Erreur lors de la vérification de la bibliothèque:', error);
+      }
+    };
+
+    checkLibraryStatus();
+  }, [user, game.id]);
+
+  const handleLibraryToggle = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Empêcher l'ouverture de la modale
-    const gameId = game.id.toString();
+    if (!user) return;
     
-    if (inLibrary) {
-      removeGame(gameId);
-      setInLibrary(false);
-    } else {
-      addGame(gameId);
-      setInLibrary(true);
+    setLoading(true);
+    try {
+      if (inLibrary) {
+        await LibraryService.removeFromLibrary(user.id, game.id);
+        setInLibrary(false);
+      } else {
+        await LibraryService.addToLibrary(user.id, game.id);
+        setInLibrary(true);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la modification de la bibliothèque:', error);
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -239,13 +264,19 @@ const GameCard: React.FC<GameCardProps> = ({ game, rank, showCompatibility = fal
             {/* Bouton bibliothèque */}
             <Button
               onClick={handleLibraryToggle}
+              disabled={!user || loading}
               variant={inLibrary ? "default" : "outline"}
               className={`w-full ${inLibrary 
                 ? 'bg-green-600 hover:bg-green-700 text-white' 
                 : 'border-green-600 text-green-600 hover:bg-green-50'
               } transition-all duration-200`}
             >
-              {inLibrary ? (
+              {loading ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-2"></div>
+                  {inLibrary ? 'Suppression...' : 'Ajout...'}
+                </>
+              ) : inLibrary ? (
                 <>
                   <BookmarkCheck size={16} className="mr-2" />
                   Dans ma bibliothèque
@@ -253,7 +284,7 @@ const GameCard: React.FC<GameCardProps> = ({ game, rank, showCompatibility = fal
               ) : (
                 <>
                   <BookmarkPlus size={16} className="mr-2" />
-                  Ajouter à ma bibliothèque
+                  {user ? 'Ajouter à ma bibliothèque' : 'Connexion requise'}
                 </>
               )}
             </Button>

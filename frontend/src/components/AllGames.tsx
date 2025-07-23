@@ -5,7 +5,8 @@ import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 import { Input } from './ui/input';
 import { Game } from '../types';
-import { useLibrary } from '../services/library';
+import { useAuth } from '../hooks/useAuth';
+import { LibraryService } from '../lib/supabase';
 import GameCard from './GameCard';
 
 interface AllGamesProps {
@@ -20,7 +21,29 @@ const AllGames: React.FC<AllGamesProps> = ({ allGames, onClose, onOpenGameModal 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
   const [sortBy, setSortBy] = useState<'name' | 'type' | 'duration' | 'complexity'>('name');
-  const { hasGame } = useLibrary();
+  const [libraryGameIds, setLibraryGameIds] = useState<Set<number>>(new Set());
+  const { user } = useAuth();
+
+  // Charger la bibliothèque utilisateur
+  useEffect(() => {
+    const loadLibrary = async () => {
+      if (!user) {
+        setLibraryGameIds(new Set());
+        return;
+      }
+      
+      try {
+        const libraryData = await LibraryService.getUserLibrary(user.id);
+        const gameIds = new Set(libraryData.map(item => item.game_id));
+        setLibraryGameIds(gameIds);
+      } catch (error) {
+        console.error('Erreur lors du chargement de la bibliothèque:', error);
+        setLibraryGameIds(new Set());
+      }
+    };
+
+    loadLibrary();
+  }, [user]);
 
   // Filtrer et trier les jeux
   const processedGames = useMemo(() => {
@@ -113,16 +136,14 @@ const AllGames: React.FC<AllGamesProps> = ({ allGames, onClose, onOpenGameModal 
   };
 
 
-  const getStats = () => {
+  const stats = useMemo(() => {
     const total = allGames.length;
-    const inLibrary = allGames.filter(game => hasGame(game.id.toString())).length;
+    const inLibrary = allGames.filter(game => libraryGameIds.has(game.id)).length;
     const avgDuration = Math.round(allGames.reduce((acc, game) => acc + game.duree_moyenne, 0) / total);
     const avgComplexity = Math.round(allGames.reduce((acc, game) => acc + game.complexite, 0) / total * 10) / 10;
     
     return { total, inLibrary, avgDuration, avgComplexity };
-  };
-
-  const stats = getStats();
+  }, [allGames, libraryGameIds]);
 
   return (
     <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">

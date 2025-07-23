@@ -6,7 +6,8 @@ import { Button } from './ui/button';
 import { Textarea } from './ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { useLibrary } from '../services/library';
+import { useAuth } from '../hooks/useAuth';
+import { LibraryService } from '../lib/supabase';
 
 interface MoodAnalyzerProps {
   onAnalyze: (mood: string, searchInLibrary?: boolean) => void;
@@ -19,8 +20,29 @@ const MoodAnalyzer: React.FC<MoodAnalyzerProps> = ({ onAnalyze, loading, analysi
   const [mood, setMood] = useState('');
   const [focused, setFocused] = useState(false);
   const [searchInLibrary, setSearchInLibrary] = useState(false);
+  const [libraryCount, setLibraryCount] = useState(0);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { getGameCount } = useLibrary();
+  const { user } = useAuth();
+
+  // Charger le nombre de jeux dans la bibliothèque
+  useEffect(() => {
+    const loadLibraryCount = async () => {
+      if (!user) {
+        setLibraryCount(0);
+        return;
+      }
+      
+      try {
+        const libraryData = await LibraryService.getUserLibrary(user.id);
+        setLibraryCount(libraryData.length);
+      } catch (error) {
+        console.error('Erreur lors du chargement de la bibliothèque:', error);
+        setLibraryCount(0);
+      }
+    };
+
+    loadLibraryCount();
+  }, [user]);
 
   const exampleMoods = [
     "Je suis fatigué mais j'ai envie de rigoler avec mes amis",
@@ -141,7 +163,7 @@ const MoodAnalyzer: React.FC<MoodAnalyzerProps> = ({ onAnalyze, loading, analysi
                       <Library size={16} className="mr-1 text-purple-600" />
                       Chercher uniquement dans ma bibliothèque
                       <span className="ml-1 text-xs text-gray-500">
-                        ({getGameCount()} jeu{getGameCount() > 1 ? 'x' : ''})
+                        ({libraryCount} jeu{libraryCount > 1 ? 'x' : ''})
                       </span>
                     </label>
                   </div>
@@ -152,7 +174,7 @@ const MoodAnalyzer: React.FC<MoodAnalyzerProps> = ({ onAnalyze, loading, analysi
                   >
                     <Button
                       type="submit"
-                      disabled={loading || !mood.trim() || (searchInLibrary && getGameCount() === 0)}
+                      disabled={loading || !mood.trim() || (searchInLibrary && libraryCount === 0)}
                       className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-medium shadow-lg"
                     >
                       {loading ? (
