@@ -8,6 +8,7 @@ import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
 import { useAuth } from '../hooks/useAuth';
 import { LibraryService } from '../lib/supabase';
+import { libraryCacheService } from '../services/libraryCache';
 
 interface GameModalProps {
   game: Game | null;
@@ -122,14 +123,24 @@ const GameModal: React.FC<GameModalProps> = ({ game, isOpen, onClose, origin }) 
   const [inLibrary, setInLibrary] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Vérifier si le jeu est dans la bibliothèque au chargement
+  // Vérifier si le jeu est dans la bibliothèque au chargement avec cache partagé
   React.useEffect(() => {
     const checkLibraryStatus = async () => {
       if (!user || !game) return;
       
+      // Vérifier le cache d'abord
+      if (libraryCacheService.isInCache(user.id, game.id)) {
+        const cached = libraryCacheService.getFromCache(user.id, game.id);
+        setInLibrary(cached || false);
+        return;
+      }
+      
       try {
         const isInLibrary = await LibraryService.isInLibrary(user.id, game.id);
         setInLibrary(isInLibrary);
+        
+        // Mettre en cache le résultat
+        libraryCacheService.setInCache(user.id, game.id, isInLibrary);
       } catch (error) {
         console.error('Erreur lors de la vérification de la bibliothèque:', error);
       }
@@ -148,9 +159,11 @@ const GameModal: React.FC<GameModalProps> = ({ game, isOpen, onClose, origin }) 
       if (inLibrary) {
         await LibraryService.removeFromLibrary(user.id, game.id);
         setInLibrary(false);
+        libraryCacheService.setInCache(user.id, game.id, false);
       } else {
         await LibraryService.addToLibrary(user.id, game.id);
         setInLibrary(true);
+        libraryCacheService.setInCache(user.id, game.id, true);
       }
     } catch (error) {
       console.error('Erreur lors de la modification de la bibliothèque:', error);

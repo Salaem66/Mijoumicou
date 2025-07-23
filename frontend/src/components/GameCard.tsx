@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader } from './ui/card';
 import { Badge } from './ui/badge';
 import { useAuth } from '../hooks/useAuth';
 import { LibraryService } from '../lib/supabase';
+import { libraryCacheService } from '../services/libraryCache';
 
 interface GameCardProps {
   game: Game;
@@ -19,22 +20,41 @@ const GameCard: React.FC<GameCardProps> = ({ game, rank, showCompatibility = fal
   const { user } = useAuth();
   const [inLibrary, setInLibrary] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [hasChecked, setHasChecked] = useState(false);
 
-  // Vérifier si le jeu est dans la bibliothèque au chargement
+  // Vérifier si le jeu est dans la bibliothèque au chargement avec cache optimisé
   useEffect(() => {
     const checkLibraryStatus = async () => {
-      if (!user) return;
+      if (!user || hasChecked) return;
+      
+      // Vérifier le cache d'abord
+      if (libraryCacheService.isInCache(user.id, game.id)) {
+        const cached = libraryCacheService.getFromCache(user.id, game.id);
+        setInLibrary(cached || false);
+        setHasChecked(true);
+        return;
+      }
       
       try {
-        const isInLibrary = await LibraryService.isInLibrary(user.id, game.id);
+        // Charger toute la bibliothèque (mise en cache automatique)
+        const gameIds = await libraryCacheService.loadUserLibrary(user.id, LibraryService);
+        const isInLibrary = gameIds.has(game.id);
+        
+        // Mettre en cache le résultat (si pas déjà fait)
+        if (!libraryCacheService.isInCache(user.id, game.id)) {
+          libraryCacheService.setInCache(user.id, game.id, isInLibrary);
+        }
+        
         setInLibrary(isInLibrary);
+        setHasChecked(true);
       } catch (error) {
         console.error('Erreur lors de la vérification de la bibliothèque:', error);
+        setHasChecked(true);
       }
     };
 
     checkLibraryStatus();
-  }, [user, game.id]);
+  }, [user, game.id, hasChecked]);
 
   const handleLibraryToggle = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Empêcher l'ouverture de la modale
@@ -45,9 +65,11 @@ const GameCard: React.FC<GameCardProps> = ({ game, rank, showCompatibility = fal
       if (inLibrary) {
         await LibraryService.removeFromLibrary(user.id, game.id);
         setInLibrary(false);
+        libraryCacheService.setInCache(user.id, game.id, false);
       } else {
         await LibraryService.addToLibrary(user.id, game.id);
         setInLibrary(true);
+        libraryCacheService.setInCache(user.id, game.id, true);
       }
     } catch (error) {
       console.error('Erreur lors de la modification de la bibliothèque:', error);
