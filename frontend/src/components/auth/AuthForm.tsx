@@ -3,7 +3,7 @@ import { Button } from '../ui/button'
 import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { Card } from '../ui/card'
-import { AuthService, supabase } from '../../lib/supabase'
+import { AuthService } from '../../lib/supabase'
 
 interface AuthFormProps {
   mode: 'login' | 'register'
@@ -63,14 +63,7 @@ export function AuthForm({ mode, onSuccess, onToggleMode }: AuthFormProps) {
     setError(null)
 
     try {
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}`
-        }
-      })
-      
-      if (error) throw error
+      await AuthService.signInWithGoogle()
       // La redirection se fera automatiquement
     } catch (err: any) {
       setError(err.message || 'Erreur lors de la connexion avec Google')
