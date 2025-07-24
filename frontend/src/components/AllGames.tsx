@@ -7,6 +7,7 @@ import { Input } from './ui/input';
 import { Game } from '../types';
 import { useAuth } from '../hooks/useAuth';
 import { LibraryService } from '../lib/supabase';
+import { libraryCacheService } from '../services/libraryCache';
 import GameCard from './GameCard';
 
 interface AllGamesProps {
@@ -24,7 +25,7 @@ const AllGames: React.FC<AllGamesProps> = ({ allGames, onClose, onOpenGameModal 
   const [libraryGameIds, setLibraryGameIds] = useState<Set<number>>(new Set());
   const { user } = useAuth();
 
-  // Charger la bibliothèque utilisateur
+  // Charger la bibliothèque utilisateur avec cache
   useEffect(() => {
     const loadLibrary = async () => {
       if (!user) {
@@ -33,8 +34,8 @@ const AllGames: React.FC<AllGamesProps> = ({ allGames, onClose, onOpenGameModal 
       }
       
       try {
-        const libraryData = await LibraryService.getUserLibrary(user.id);
-        const gameIds = new Set(libraryData.map(item => item.game_id));
+        // Utiliser le cache service pour éviter les requêtes multiples
+        const gameIds = await libraryCacheService.loadUserLibrary(user.id, LibraryService);
         setLibraryGameIds(gameIds);
       } catch (error) {
         console.error('Erreur lors du chargement de la bibliothèque:', error);

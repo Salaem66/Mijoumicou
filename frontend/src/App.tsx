@@ -60,11 +60,12 @@ function AppContent() {
     try {
       let libraryIds: string[] = [];
       
-      // Si recherche dans la bibliothèque, récupérer les IDs depuis Supabase
+      // Si recherche dans la bibliothèque, récupérer les IDs depuis le cache
       if (searchInLibrary && user) {
         const { LibraryService } = await import('./lib/supabase');
-        const libraryData = await LibraryService.getUserLibrary(user.id);
-        libraryIds = libraryData.map(item => item.game_id.toString());
+        const { libraryCacheService } = await import('./services/libraryCache');
+        const gameIds = await libraryCacheService.loadUserLibrary(user.id, LibraryService);
+        libraryIds = Array.from(gameIds).map(id => id.toString());
         
         console.log('🔍 Recherche dans la bibliothèque Supabase:', searchInLibrary);
         console.log('📚 Jeux dans la bibliothèque:', libraryIds);

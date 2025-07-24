@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { useAuth } from '../hooks/useAuth';
 import { LibraryService } from '../lib/supabase';
+import { libraryCacheService } from '../services/libraryCache';
 
 interface MoodAnalyzerProps {
   onAnalyze: (mood: string, searchInLibrary?: boolean) => void;
@@ -24,7 +25,7 @@ const MoodAnalyzer: React.FC<MoodAnalyzerProps> = ({ onAnalyze, loading, analysi
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { user } = useAuth();
 
-  // Charger le nombre de jeux dans la bibliothèque
+  // Charger le nombre de jeux dans la bibliothèque avec cache
   useEffect(() => {
     const loadLibraryCount = async () => {
       if (!user) {
@@ -33,8 +34,9 @@ const MoodAnalyzer: React.FC<MoodAnalyzerProps> = ({ onAnalyze, loading, analysi
       }
       
       try {
-        const libraryData = await LibraryService.getUserLibrary(user.id);
-        setLibraryCount(libraryData.length);
+        // Utiliser le cache service pour éviter les requêtes multiples
+        const gameIds = await libraryCacheService.loadUserLibrary(user.id, LibraryService);
+        setLibraryCount(gameIds.size);
       } catch (error) {
         console.error('Erreur lors du chargement de la bibliothèque:', error);
         setLibraryCount(0);

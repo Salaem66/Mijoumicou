@@ -8,6 +8,7 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { useAuth } from '../hooks/useAuth';
 import { LibraryService, FavoritesService } from '../lib/supabase';
+import { libraryCacheService } from '../services/libraryCache';
 import { Game } from '../types';
 
 interface PersonalLibraryProps {
@@ -42,10 +43,14 @@ const PersonalLibrary: React.FC<PersonalLibraryProps> = ({ onClose, onOpenGameMo
         setLoading(true);
         console.log('🔄 Chargement bibliothèque pour user:', user.id);
         
-        const [libraryData, favoritesData] = await Promise.all([
-          LibraryService.getUserLibrary(user.id),
+        // Utiliser le cache pour la bibliothèque, appel direct pour les favoris (moins fréquent)
+        const [, favoritesData] = await Promise.all([
+          libraryCacheService.loadUserLibrary(user.id, LibraryService),
           FavoritesService.getUserFavorites(user.id)
         ]);
+        
+        // Récupérer les données complètes de la bibliothèque depuis le cache
+        const libraryData = await LibraryService.getUserLibrary(user.id);
 
         console.log('📚 Données bibliothèque:', libraryData);
         console.log('❤️ Données favoris:', favoritesData);
