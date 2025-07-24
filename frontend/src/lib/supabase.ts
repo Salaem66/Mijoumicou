@@ -204,11 +204,11 @@ export class LibraryService {
 
   static async addToLibrary(userId: string, gameId: number, notes?: string, rating?: number) {
     try {
-      // Vérifier d'abord si le jeu n'est pas déjà dans la bibliothèque
-      const isAlreadyInLibrary = await this.isInLibrary(userId, gameId);
-      if (isAlreadyInLibrary) {
-        throw new Error('Ce jeu est déjà dans votre bibliothèque');
-      }
+      // TEMPORAIRE: Désactiver la vérification préventive qui peut causer des boucles
+      // const isAlreadyInLibrary = await this.isInLibrary(userId, gameId);
+      // if (isAlreadyInLibrary) {
+      //   throw new Error('Ce jeu est déjà dans votre bibliothèque');
+      // }
 
       const { data, error } = await supabase
         .from('user_libraries')

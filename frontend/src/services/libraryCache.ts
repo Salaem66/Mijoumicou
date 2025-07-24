@@ -4,6 +4,7 @@
 class LibraryCacheService {
   private cache = new Map<string, boolean>();
   private loadingPromises = new Map<string, Promise<Set<number>>>();
+  private failedRequests = new Set<string>(); // Circuit breaker pour éviter les boucles
 
   // Génère une clé de cache
   private getCacheKey(userId: string, gameId: number): string {
@@ -27,6 +28,12 @@ class LibraryCacheService {
 
   // Charge toute la bibliothèque et met en cache (évite les requêtes multiples)
   async loadUserLibrary(userId: string, libraryService: any): Promise<Set<number>> {
+    // Circuit breaker : si cette requête a déjà échoué, retourner un set vide
+    if (this.failedRequests.has(userId)) {
+      console.warn(`🔴 Circuit breaker activé pour userId: ${userId}`);
+      return new Set<number>();
+    }
+
     // Si une requête est déjà en cours, attendre le résultat
     if (this.loadingPromises.has(userId)) {
       return this.loadingPromises.get(userId)!;
@@ -35,6 +42,7 @@ class LibraryCacheService {
     // Créer une nouvelle promesse de chargement
     const loadingPromise: Promise<Set<number>> = (async () => {
       try {
+        console.log(`🔄 Chargement bibliothèque depuis Supabase pour: ${userId}`);
         const libraryData = await libraryService.getUserLibrary(userId);
         const gameIds = new Set<number>(libraryData.map((item: any) => Number(item.game_id)));
 
@@ -43,9 +51,14 @@ class LibraryCacheService {
           this.setInCache(userId, Number(item.game_id), true);
         });
 
+        console.log(`✅ Bibliothèque mise en cache: ${gameIds.size} jeux`);
         return gameIds;
       } catch (error) {
-        console.error('Erreur lors du chargement de la bibliothèque:', error);
+        console.error('❌ Erreur lors du chargement de la bibliothèque:', error);
+        // Activer le circuit breaker pour éviter les boucles
+        this.failedRequests.add(userId);
+        // Désactiver après 30 secondes
+        setTimeout(() => this.failedRequests.delete(userId), 30000);
         return new Set<number>();
       } finally {
         // Nettoyer la promesse après completion
