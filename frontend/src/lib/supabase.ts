@@ -203,19 +203,48 @@ export class LibraryService {
   }
 
   static async addToLibrary(userId: string, gameId: number, notes?: string, rating?: number) {
-    const { data, error } = await supabase
-      .from('user_libraries')
-      .insert({
-        user_id: userId,
-        game_id: gameId,
-        notes,
-        rating
-      })
-      .select()
-      .single()
-    
-    if (error) throw error
-    return data
+    try {
+      // Vérifier d'abord si le jeu n'est pas déjà dans la bibliothèque
+      const isAlreadyInLibrary = await this.isInLibrary(userId, gameId);
+      if (isAlreadyInLibrary) {
+        throw new Error('Ce jeu est déjà dans votre bibliothèque');
+      }
+
+      const { data, error } = await supabase
+        .from('user_libraries')
+        .insert({
+          user_id: userId,
+          game_id: gameId,
+          notes,
+          rating
+        })
+        .select()
+        .single()
+      
+      if (error) {
+        console.error('Erreur addToLibrary:', {
+          error,
+          userId,
+          gameId,
+          errorCode: error.code,
+          errorMessage: error.message
+        });
+        
+        // Gestion spécifique des erreurs courantes
+        if (error.code === '23505') { // Unique constraint violation
+          throw new Error('Ce jeu est déjà dans votre bibliothèque');
+        } else if (error.code === '42501') { // Insufficient privilege
+          throw new Error('Permissions insuffisantes pour ajouter ce jeu');
+        } else {
+          throw new Error(`Erreur lors de l'ajout: ${error.message}`);
+        }
+      }
+      
+      return data
+    } catch (err: any) {
+      console.error('Exception addToLibrary:', err);
+      throw err;
+    }
   }
 
   static async removeFromLibrary(userId: string, gameId: number) {
